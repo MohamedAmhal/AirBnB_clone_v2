@@ -13,17 +13,15 @@ class FileStorage:
         Return:
             returns a dictionary of __object
         """
-        dic = {}
+
         if cls:
-            dictionary = self.__objects
-            for key in dictionary:
-                partition = key.replace('.', ' ')
-                partition = shlex.split(partition)
-                if (partition[0] == cls.__name__):
-                    dic[key] = self.__objects[key]
-            return (dic)
-        else:
-            return self.__objects
+            if isinstance(cls, str):
+                cls = globals().get(cls)
+            if cls and issubclass(cls, BaseModel):
+                cls_dict = {k: v for k,
+                            v in self.__objects.items() if isinstance(v, cls)}
+                return cls_dict
+        return FileStorage.__objects
     def new(self, obj):
         """Adds new object to storage dictionary"""
         self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
@@ -59,4 +57,19 @@ class FileStorage:
                 for key, val in temp.items():
                         self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
+            pass
+
+    def delete(self, obj=None):
+        """
+        delete the object in __object if not equal to none
+        """
+        id obj == None:
+            return
+        a = f"{obj.__class__.__name__}.{obj.id}"
+
+        try:
+            del FileStorage.__objects[a]
+        except AttributeError:
+            pass
+        except KeyboardInterrupt:
             pass
